@@ -11,6 +11,7 @@ package com.mycompany.p1.ipc1;
 public class P1IPC1 {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        login Login = new login();
+        Login.setVisible(true);
     }
 }
