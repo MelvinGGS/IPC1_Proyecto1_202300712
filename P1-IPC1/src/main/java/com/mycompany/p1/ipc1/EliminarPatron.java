@@ -34,6 +34,7 @@ public class EliminarPatron extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 22)); // NOI18N
         jLabel6.setText("Código");
