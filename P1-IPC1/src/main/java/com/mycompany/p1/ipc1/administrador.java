@@ -1,11 +1,22 @@
+package com.mycompany.p1.ipc1;
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 
-package com.mycompany.p1.ipc1;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+
+
 
 
 /**
@@ -13,10 +24,59 @@ import javax.swing.table.DefaultTableModel;
  * @author G E O
  */
 public class administrador extends javax.swing.JFrame {
+    
+    
+        private Object tablaRutas1;
+    public List<String[]> listaRutas;
+    public List<String[]> listaReportes;
 
     /**
      * Creates new form administrador
      */
+    
+    private void LoadJTable1() { LoadJTable(jTable1); } 
+    private void LoadJTable2() { LoadJTable(jTable2); } 
+    private void LoadJTable3() { LoadJTable(jTable3); }
+    
+    private void LoadJTable(JTable tabla) {
+        try {
+            // Limpiar la tabla antes de cargar nuevos datos
+            DefaultTableModel modeloTabla = (DefaultTableModel) tabla.getModel();
+            //modeloTabla.setRowCount(0); // Elimina todas las filas
+            //modeloTabla.setColumnCount(0); // Elimina todas las columnas
+
+            // Configurar el archivo de selección
+            JFileChooser archivo = new JFileChooser();
+            FileNameExtensionFilter filtro = new FileNameExtensionFilter("*.CSV", "csv");
+            archivo.setFileFilter(filtro);
+            archivo.showOpenDialog(null);
+            File abrir = archivo.getSelectedFile();
+
+            if (abrir != null) {
+                // Configurar el lector de archivos
+                FileReader fichero = new FileReader(abrir);
+                BufferedReader leer = new BufferedReader(fichero);
+
+                // Leer la primera línea para obtener los nombres de las columnas
+                String primeraLinea = leer.readLine();
+                String[] nombresColumnas = primeraLinea.split(",");
+                modeloTabla.setColumnIdentifiers(nombresColumnas);
+
+                // Leer las líneas restantes y agregar los datos a la tabla
+                String texto;
+                while ((texto = leer.readLine()) != null) {
+                    String[] datosFila = texto.split(",");
+                    modeloTabla.addRow(datosFila);
+                }
+
+                // Cerrar el lector de archivos
+                leer.close();
+            }
+        } catch (IOException e) {
+            System.out.println("Error al cargar el archivo: " + e.getMessage());
+        }
+    }
+    
     public administrador() {
         initComponents();
         this.setLocationRelativeTo(null);
@@ -62,7 +122,6 @@ public class administrador extends javax.swing.JFrame {
         jTable3 = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(1300, 580));
         setResizable(false);
 
         jPanel1.setBackground(new java.awt.Color(0, 0, 0));
@@ -106,7 +165,7 @@ public class administrador extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Código", "Nombre", "Género", "Experimentos"
+                "Código", "Nombre", "Género", "Experimentos", "Contraseña"
             }
         ));
         jTable1.getTableHeader().setReorderingAllowed(false);
@@ -158,6 +217,11 @@ public class administrador extends javax.swing.JFrame {
         });
 
         jButton6.setText("Cargar");
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
 
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -267,6 +331,11 @@ public class administrador extends javax.swing.JFrame {
         });
 
         jButton9.setText("Cargar");
+        jButton9.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton9ActionPerformed(evt);
+            }
+        });
 
         jButton10.setText("Eliminar");
         jButton10.addActionListener(new java.awt.event.ActionListener() {
@@ -397,8 +466,16 @@ public class administrador extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton10ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
+        LoadJTable(jTable1);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        LoadJTable(jTable2);
+    }//GEN-LAST:event_jButton6ActionPerformed
+
+    private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
+        LoadJTable(jTable3);
+    }//GEN-LAST:event_jButton9ActionPerformed
 
     // function to add row
     public static void AgregarJTable(Object[] dataRow)

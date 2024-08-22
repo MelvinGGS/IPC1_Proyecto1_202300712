@@ -190,6 +190,7 @@ public class CrearInvestigador extends javax.swing.JFrame {
             jTextField1.getText(),
             jTextField3.getText(),
             jTextField4.getText(),
+            0,
             jPasswordField1.getText(),
           });
         
