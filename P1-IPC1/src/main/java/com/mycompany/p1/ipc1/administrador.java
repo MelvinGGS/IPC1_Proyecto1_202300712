@@ -14,6 +14,11 @@ import javax.swing.JFrame;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.*;
+import java.util.Vector;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 
@@ -23,12 +28,14 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *
  * @author G E O
  */
-public class administrador extends javax.swing.JFrame {
+public class administrador extends javax.swing.JFrame{
     
     
-        private Object tablaRutas1;
-    public List<String[]> listaRutas;
-    public List<String[]> listaReportes;
+    private static final String FILE_TABLE1 = "tabla1.dat";
+    private static final String FILE_TABLE2 = "tabla2.dat";
+    private static final String FILE_TABLE3 = "tabla3.dat";
+    
+        private JTable tabla;
 
     /**
      * Creates new form administrador
@@ -36,7 +43,7 @@ public class administrador extends javax.swing.JFrame {
     
     private void LoadJTable1() { LoadJTable(jTable1); } 
     private void LoadJTable2() { LoadJTable(jTable2); } 
-    private void LoadJTable3() { LoadJTable(jTable3); }
+    private void LoadJTable3()  { LoadJTable(jTable3); }
     
     private void LoadJTable(JTable tabla) {
         try {
@@ -77,13 +84,60 @@ public class administrador extends javax.swing.JFrame {
         }
     }
     
+    
+     private void guardarDatos() {
+        guardarModelo(jTable1, FILE_TABLE1);
+        guardarModelo(jTable2, FILE_TABLE2);
+        guardarModelo(jTable3, FILE_TABLE3);
+    }
+
+    private void cargarDatos() {
+        cargarModelo(jTable1, FILE_TABLE1);
+        cargarModelo(jTable2, FILE_TABLE2);
+        cargarModelo(jTable3, FILE_TABLE3);
+    }
+
+    private void guardarModelo(JTable tabla, String archivo) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(archivo))) {
+            DefaultTableModel modelo = (DefaultTableModel) tabla.getModel();
+            // Guardar datos
+            oos.writeObject(modelo.getDataVector());
+            // Guardar nombres de columnas
+            Vector<String> columnIdentifiers = new Vector<>();
+            for (int i = 0; i < modelo.getColumnCount(); i++) {
+                columnIdentifiers.add(modelo.getColumnName(i));
+            }
+            oos.writeObject(columnIdentifiers);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void cargarModelo(JTable tabla, String archivo) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(archivo))) {
+            // Cargar datos y nombres de columnas
+            Vector<Vector<Object>> dataVector = (Vector<Vector<Object>>) ois.readObject();
+            Vector<String> columnIdentifiers = (Vector<String>) ois.readObject();
+
+            // Crear nuevo DefaultTableModel con los datos cargados
+            DefaultTableModel modelo = new DefaultTableModel(dataVector, columnIdentifiers);
+            tabla.setModel(modelo);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public administrador() {
+        tabla = new JTable();
         initComponents();
         this.setLocationRelativeTo(null);
         this.setTitle("MODULO ADMINISTRADOR - IPC QUIMIK");
+        cargarDatos();
     }
     
-
+        public JTable getTabla() {
+        return tabla;
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -123,6 +177,14 @@ public class administrador extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                formWindowClosed(evt);
+            }
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(0, 0, 0));
         jPanel1.setPreferredSize(new java.awt.Dimension(1220, 580));
@@ -165,7 +227,7 @@ public class administrador extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Código", "Nombre", "Género", "Experimentos", "Contraseña"
+                "Código", "Nombre", "Género", "Experimentos"
             }
         ));
         jTable1.getTableHeader().setReorderingAllowed(false);
@@ -426,7 +488,7 @@ public class administrador extends javax.swing.JFrame {
         frameText.setVisible(true);
         frameText.pack();
         frameText.setLocationRelativeTo(null);
-        frameText.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);  
+        frameText.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);   
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
@@ -470,12 +532,20 @@ public class administrador extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        LoadJTable(jTable2);
+       LoadJTable(jTable2);
     }//GEN-LAST:event_jButton6ActionPerformed
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-        LoadJTable(jTable3);
+       LoadJTable(jTable3);
     }//GEN-LAST:event_jButton9ActionPerformed
+
+    private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_formWindowClosed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        guardarDatos();
+    }//GEN-LAST:event_formWindowClosing
 
     // function to add row
     public static void AgregarJTable(Object[] dataRow)

@@ -4,6 +4,7 @@
  */
 package com.mycompany.p1.ipc1;
 
+
 /**
  *
  * @author G E O
@@ -13,11 +14,13 @@ public class CrearInvestigador extends javax.swing.JFrame {
     /**
      * Creates new form CrearInvestigador
      */
+
     public CrearInvestigador() {
         initComponents();
         this.setLocationRelativeTo(null);
         this.setTitle("CREAR INVESTIGADOR - IPC QUIMIK");   
     }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -185,7 +188,6 @@ public class CrearInvestigador extends javax.swing.JFrame {
     }//GEN-LAST:event_jPasswordField1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-              
         administrador.AgregarJTable(new Object[]{
             jTextField1.getText(),
             jTextField3.getText(),
@@ -193,7 +195,7 @@ public class CrearInvestigador extends javax.swing.JFrame {
             0,
             jPasswordField1.getText(),
           });
-        
+       
     }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
