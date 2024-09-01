@@ -1,6 +1,6 @@
-package interfaz;
+package INTERFACES;
 
-import archivo.ManejadorArchivoBinarioInvestigador;
+import ARCHIVOS.ManejadorArchivoBinarioInvestigador;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,6 +13,8 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.util.Arrays;
@@ -21,8 +23,8 @@ import javax.swing.JOptionPane;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
-import modelo.Investigador;
-import modelo.Muestra;
+import MODELS.Investigador;
+import MODELS.Muestra;
 
 
 
@@ -69,6 +71,13 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
         // Forzar el repintado del JScrollPane (opcional)
         jScrollPane2.repaint();
     }
+
+
+        public JTable getJTable3() {
+        return jTable3;
+    }
+
+    
 
 
     // Método para cargar muestras desde un archivo CSV
@@ -379,23 +388,16 @@ private void inicializarTablas() {
             boolean[] canEdit = new boolean [] {
                 false, false, false, true
             };
-        
+
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-
-        add(jScrollPane2, BorderLayout.CENTER);
-
-        // Hacer visible el frame
-        setVisible(true);
-        
         jScrollPane2.setViewportView(jTable2);
         if (jTable2.getColumnModel().getColumnCount() > 0) {
             jTable2.getColumnModel().getColumn(0).setResizable(false);
             jTable2.getColumnModel().getColumn(1).setResizable(false);
             jTable2.getColumnModel().getColumn(2).setResizable(false);
-            jTable2.getColumnModel().getColumn(3).setResizable(false);
         }
 
         jButton5.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
@@ -619,7 +621,7 @@ private void inicializarTablas() {
     }//GEN-LAST:event_jButton4ActionPerformed
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
-        frmCrearMuestra vistaCrearMuestra = new frmCrearMuestra(null);
+        frmCrearMuestra vistaCrearMuestra = new frmCrearMuestra(this);
         vistaCrearMuestra.setLocationRelativeTo(null);
         vistaCrearMuestra.setVisible(true);
     }//GEN-LAST:event_jButton5ActionPerformed
@@ -639,7 +641,7 @@ private void inicializarTablas() {
     }//GEN-LAST:event_jButton7ActionPerformed
 
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
-        frmCrearPatron vistaCrearPatron = new frmCrearPatron();
+        frmCrearPatron vistaCrearPatron = new frmCrearPatron(this);
         vistaCrearPatron.setLocationRelativeTo(null);
         vistaCrearPatron.setVisible(true);
     }//GEN-LAST:event_jButton8ActionPerformed

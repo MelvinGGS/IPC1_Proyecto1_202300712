@@ -1,10 +1,10 @@
-package archivo;
+package ARCHIVOS;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import modelo.Investigador;
-import modelo.Muestra;
+import MODELS.Investigador;
+import MODELS.Muestra;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;

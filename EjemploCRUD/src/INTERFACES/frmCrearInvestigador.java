@@ -2,11 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package interfaz;
+package INTERFACES;
 
-import archivo.ManejadorArchivoBinarioInvestigador;
+import ARCHIVOS.ManejadorArchivoBinarioInvestigador;
 import javax.swing.JOptionPane;
-import modelo.Investigador;
+import MODELS.Investigador;
 import java.util.List;
 
 /**

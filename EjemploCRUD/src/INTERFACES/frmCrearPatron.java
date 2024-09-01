@@ -1,9 +1,10 @@
-package interfaz;
+package INTERFACES;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.DefaultTableModel;
 
-import modelo.Muestra;
+import MODELS.Patron;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,38 +12,32 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class frmCrearMuestra extends javax.swing.JFrame {
+public class frmCrearPatron extends javax.swing.JFrame {
 
     private File selectedFile;
-    private frmMenuAdministracion menuAdmin;
     private JTextField codigoField;
-    private JTextField descripcionField;
-    private JTextField estadoField;
+    private JTextField nombreField;
     private JButton jButton1;
     private JButton jButton2;
+    private frmMenuAdministracion menuAdmin;
 
-    public frmCrearMuestra() {
-        initComponents();
-    }
-    
-    public frmCrearMuestra(frmMenuAdministracion menuAdmin) {
+    public frmCrearPatron(frmMenuAdministracion menuAdmin) {
         this.menuAdmin = menuAdmin;
         initComponents();
+        updateTableFromBin(); // Load data from .bin file when the window opens
     }
 
     private void initComponents() {
         // Inicialización de componentes
         codigoField = new JTextField(15);
-        descripcionField = new JTextField(15);
-        estadoField = new JTextField(15);
+        nombreField = new JTextField(15);
         jButton1 = new JButton("Cargar CSV");
         jButton2 = new JButton("Guardar");
 
         JLabel codigoLabel = new JLabel("Código:");
-        JLabel descripcionLabel = new JLabel("Descripción:");
-        JLabel estadoLabel = new JLabel("Estado:");
+        JLabel nombreLabel = new JLabel("Nombre:");
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jButton1.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -66,14 +61,12 @@ public class frmCrearMuestra extends javax.swing.JFrame {
             layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(codigoLabel)
-                    .addComponent(descripcionLabel)
-                    .addComponent(estadoLabel)
+                    .addComponent(nombreLabel)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(codigoField)
-                    .addComponent(descripcionField)
-                    .addComponent(estadoField))
+                    .addComponent(nombreField))
         );
 
         layout.setVerticalGroup(
@@ -82,11 +75,8 @@ public class frmCrearMuestra extends javax.swing.JFrame {
                     .addComponent(codigoLabel)
                     .addComponent(codigoField))
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(descripcionLabel)
-                    .addComponent(descripcionField))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(estadoLabel)
-                    .addComponent(estadoField))
+                    .addComponent(nombreLabel)
+                    .addComponent(nombreField))
                 .addComponent(jButton1)
                 .addComponent(jButton2)
         );
@@ -101,6 +91,12 @@ public class frmCrearMuestra extends javax.swing.JFrame {
         int returnValue = fileChooser.showOpenDialog(null);
         if (returnValue == JFileChooser.APPROVE_OPTION) {
             selectedFile = fileChooser.getSelectedFile();
+            try {
+                List<List<String>> matrix = readCSV(selectedFile);
+                updateTable(matrix);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Error al leer el archivo CSV: " + e.getMessage());
+            }
         }
     }
 
@@ -109,21 +105,16 @@ public class frmCrearMuestra extends javax.swing.JFrame {
             try {
                 List<List<String>> matrix = readCSV(selectedFile);
                 String codigo = codigoField.getText().trim();
-                String descripcion = descripcionField.getText().trim();
-                String estado = estadoField.getText().trim();
-                saveMatrixToBin(matrix, codigo, descripcion, estado);
+                String nombre = nombreField.getText().trim();
+                saveMatrixToBin(matrix, codigo, nombre);
                 JOptionPane.showMessageDialog(this, "Archivo CSV cargado y guardado exitosamente.");
-
+                updateTableFromBin(); // Update table after saving
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(this, "Error al leer el archivo CSV: " + e.getMessage());
             }
         } else {
             JOptionPane.showMessageDialog(this, "Por favor, seleccione un archivo CSV primero.");
-        } 
-
-        // Actualizar la tabla de muestras en el menú de administración
-            menuAdmin.refrescarTablaMuestras();
-        
+        }
     }
 
     private List<List<String>> readCSV(File file) throws IOException {
@@ -151,38 +142,23 @@ public class frmCrearMuestra extends javax.swing.JFrame {
     }
 
     @SuppressWarnings("unchecked")
-    private void saveMatrixToBin(List<List<String>> matrix, String codigo, String descripcion, String estado) throws IOException {
-        List<Muestra> muestras = new ArrayList<>();
-        File file = new File("muestras.bin");
+    private void saveMatrixToBin(List<List<String>> matrix, String codigo, String nombre) throws IOException {
+        List<Patron> patrones = new ArrayList<>();
+        File file = new File("patron.bin");
 
-        // Leer muestras existentes si el archivo ya existe
+        // Leer patrones existentes si el archivo ya existe
         if (file.exists()) {
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
                 Object obj = ois.readObject();
                 if (obj instanceof List<?>) {
                     List<?> list = (List<?>) obj;
-                    if (!list.isEmpty() && list.get(0) instanceof Muestra) {
-                        muestras = (List<Muestra>) list;
+                    if (!list.isEmpty() && list.get(0) instanceof Patron) {
+                        patrones = (List<Patron>) list;
                     }
                 }
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
-        }
-
-        // Convertir la matriz de cadenas a una matriz de enteros
-        List<List<Integer>> intMatrix = new ArrayList<>();
-        for (List<String> row : matrix) {
-            List<Integer> intRow = new ArrayList<>();
-            for (String value : row) {
-                try {
-                    intRow.add(Integer.parseInt(value));
-                } catch (NumberFormatException e) {
-                    // Manejar el caso en que el valor no sea un número
-                    intRow.add(0); // O cualquier valor predeterminado
-                }
-            }
-            intMatrix.add(intRow);
         }
 
         // Convertir la matriz a una cadena CSV
@@ -191,19 +167,57 @@ public class frmCrearMuestra extends javax.swing.JFrame {
             csvContent.append(String.join(",", row)).append("\n");
         }
 
-        // Agregar la nueva muestra a la lista
-        muestras.add(new Muestra(intMatrix, codigo, descripcion, estado, csvContent.toString()));
+        // Agregar el nuevo patrón a la lista
+        patrones.add(new Patron(codigo, nombre, csvContent.toString()));
 
-        // Guardar la lista actualizada de muestras en el archivo
+        // Guardar la lista actualizada de patrones en el archivo
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-            oos.writeObject(muestras);
+            oos.writeObject(patrones);
+        }
+    }
+
+    private void updateTable(List<List<String>> matrix) {
+        DefaultTableModel tableModel = (DefaultTableModel) menuAdmin.getJTable3().getModel();
+        tableModel.setRowCount(0); // Clear existing rows
+        StringBuilder csvContent = new StringBuilder();
+        for (List<String> row : matrix) {
+            csvContent.append(String.join(",", row)).append("\n");
+        }
+        tableModel.addRow(new Object[]{null, null, csvContent.toString()});
+    }
+
+    @SuppressWarnings("unchecked")
+    public void updateTableFromBin() {
+        List<Patron> patrones = new ArrayList<>();
+        File file = new File("patron.bin");
+
+        // Leer patrones existentes si el archivo ya existe
+        if (file.exists()) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                Object obj = ois.readObject();
+                if (obj instanceof List<?>) {
+                    List<?> list = (List<?>) obj;
+                    if (!list.isEmpty() && list.get(0) instanceof Patron) {
+                        patrones = (List<Patron>) list;
+                    }
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        DefaultTableModel tableModel = (DefaultTableModel) menuAdmin.getJTable3().getModel();
+        tableModel.setRowCount(0); // Clear existing rows
+
+        for (Patron patron : patrones) {
+            tableModel.addRow(new Object[]{patron.getCodigo(), patron.getNombre(), patron.getCsvContent()});
         }
     }
 
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new frmCrearMuestra(new frmMenuAdministracion()).setVisible(true);
+                new frmCrearPatron(new frmMenuAdministracion()).setVisible(true);
             }
         });
     }

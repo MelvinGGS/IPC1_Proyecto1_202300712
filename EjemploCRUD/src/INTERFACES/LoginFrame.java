@@ -1,7 +1,7 @@
-package interfaz;
+package INTERFACES;
 
-import archivo.ManejadorArchivoBinarioInvestigador;
-import modelo.Investigador;
+import ARCHIVOS.ManejadorArchivoBinarioInvestigador;
+import MODELS.Investigador;
 
 import javax.swing.*;
 import java.awt.*;

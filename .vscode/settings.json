@@ -11,6 +11,17 @@
         "EjemploCRUD/lib/orsoncharts-1.4-eval-nofx.jar",
         "EjemploCRUD/lib/orsonpdf-1.6-eval.jar",
         "EjemploCRUD/lib/servlet.jar",
-        "EjemploCRUD/lib/swtgraphics2d.jar"
+        "EjemploCRUD/lib/swtgraphics2d.jar",
+        "IPC1 QUIMIK/lib/hamcrest-core-1.3.jar",
+        "IPC1 QUIMIK/lib/jcommon-1.0.23.jar",
+        "IPC1 QUIMIK/lib/jfreechart-1.0.19.jar",
+        "IPC1 QUIMIK/lib/jfreechart-1.0.19-experimental.jar",
+        "IPC1 QUIMIK/lib/jfreechart-1.0.19-swt.jar",
+        "IPC1 QUIMIK/lib/jfreesvg-2.0.jar",
+        "IPC1 QUIMIK/lib/junit-4.11.jar",
+        "IPC1 QUIMIK/lib/orsoncharts-1.4-eval-nofx.jar",
+        "IPC1 QUIMIK/lib/orsonpdf-1.6-eval.jar",
+        "IPC1 QUIMIK/lib/servlet.jar",
+        "IPC1 QUIMIK/lib/swtgraphics2d.jar"
     ]
 }
