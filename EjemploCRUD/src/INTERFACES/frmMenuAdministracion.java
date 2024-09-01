@@ -25,6 +25,11 @@ import org.jfree.chart.JFreeChart;
 
 import MODELS.Investigador;
 import MODELS.Muestra;
+import MODELS.Patron;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 
 
@@ -647,9 +652,75 @@ private void inicializarTablas() {
     }//GEN-LAST:event_jButton8ActionPerformed
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-        
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Seleccionar archivo CSV");
+    fileChooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("Archivos CSV", "csv"));
+
+    int seleccion = fileChooser.showOpenDialog(this);
+
+    if (seleccion == JFileChooser.APPROVE_OPTION) {
+        File archivoSeleccionado = fileChooser.getSelectedFile();
+
+        // Leer el archivo CSV y guardar los datos en un archivo binario
+        List<Patron> patrones = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(archivoSeleccionado))) {
+            String linea;
+            // Omitir la primera línea (encabezados)
+            br.readLine();
+            
+            while ((linea = br.readLine()) != null) {
+                String[] datos = linea.split(",");
+                if (datos.length == 3) {
+                    // Crear un nuevo objeto Patron y agregarlo a la lista
+                    Patron patron = new Patron(datos[0], datos[1], datos[2]);
+                    patrones.add(patron);
+                } else {
+                    JOptionPane.showMessageDialog(this, "El archivo CSV tiene un formato incorrecto.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+            
+            // Guardar los datos en el archivo binario
+            guardarDatosBinario("patron.bin", patrones);
+            
+            // Mostrar los datos en jTable3
+            cargarDatosEnTabla("patron.bin");
+            
+            JOptionPane.showMessageDialog(this, "Datos cargados correctamente en la tabla.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Error al leer el archivo: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     }//GEN-LAST:event_jButton9ActionPerformed
 
+    private void guardarDatosBinario(String ruta_archivo, List<Patron> patrones) {
+    try (FileOutputStream salidaArchivo = new FileOutputStream(ruta_archivo);
+         ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo)) {
+        salidaObjeto.writeObject(patrones);
+    } catch (IOException e) {
+        JOptionPane.showMessageDialog(this, "Error al guardar el archivo binario: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+@SuppressWarnings("unchecked")
+private void cargarDatosEnTabla(String ruta_archivo) {
+    DefaultTableModel modelo = (DefaultTableModel) jTable3.getModel();
+    modelo.setRowCount(0);  // Limpiar la tabla antes de agregar los nuevos datos
+    
+    try (FileInputStream entradaArchivo = new FileInputStream(ruta_archivo);
+         ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo)) {
+        List<Patron> patrones = (List<Patron>) entradaObjeto.readObject();
+        
+        for (Patron patron : patrones) {
+            modelo.addRow(new Object[]{patron.getCodigo(), patron.getNombre(), patron.getCsvContent()});
+        }
+    } catch (IOException | ClassNotFoundException e) {
+        JOptionPane.showMessageDialog(this, "Error al cargar los datos en la tabla: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+    
+    
     private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
         frmEliminarPatron vistaEliminarPatron = new frmEliminarPatron();
         vistaEliminarPatron.setLocationRelativeTo(null);

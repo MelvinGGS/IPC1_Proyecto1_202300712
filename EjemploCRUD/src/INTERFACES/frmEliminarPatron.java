@@ -4,11 +4,14 @@
  */
 package INTERFACES;
 
+import ARCHIVOS.ManejadorArchivoBinarioPatron;
+
 /**
  *
  * @author G E O
  */
 public class frmEliminarPatron extends javax.swing.JFrame {
+
 
     /**
      * Creates new form EliminarPatron
@@ -82,6 +85,10 @@ public class frmEliminarPatron extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    ManejadorArchivoBinarioPatron archivo = new ManejadorArchivoBinarioPatron();
+    archivo.eliminarPatron("C:\\Users\\G E O\\Desktop\\IPC1_Proyecto1_202300712\\patron.bin", txtCodigo.getText());
+    txtCodigo.setText("");
+    // Si tienes alguna tabla que quieras refrescar después de la eliminación, puedes hacerlo aquí
 
     }//GEN-LAST:event_jButton1ActionPerformed
 
