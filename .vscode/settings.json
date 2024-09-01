@@ -1,0 +1,16 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "EjemploCRUD/lib/hamcrest-core-1.3.jar",
+        "EjemploCRUD/lib/jcommon-1.0.23.jar",
+        "EjemploCRUD/lib/jfreechart-1.0.19.jar",
+        "EjemploCRUD/lib/jfreechart-1.0.19-experimental.jar",
+        "EjemploCRUD/lib/jfreechart-1.0.19-swt.jar",
+        "EjemploCRUD/lib/jfreesvg-2.0.jar",
+        "EjemploCRUD/lib/junit-4.11.jar",
+        "EjemploCRUD/lib/orsoncharts-1.4-eval-nofx.jar",
+        "EjemploCRUD/lib/orsonpdf-1.6-eval.jar",
+        "EjemploCRUD/lib/servlet.jar",
+        "EjemploCRUD/lib/swtgraphics2d.jar"
+    ]
+}
