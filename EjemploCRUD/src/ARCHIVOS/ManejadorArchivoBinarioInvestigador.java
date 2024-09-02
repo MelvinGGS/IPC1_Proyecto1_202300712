@@ -2,7 +2,10 @@ package ARCHIVOS;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
 import MODELS.Investigador;
 import MODELS.Muestra;
 import MODELS.Asignacion;
@@ -12,57 +15,45 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 
-import java.util.Collections;
-import java.util.Comparator;
-
 public class ManejadorArchivoBinarioInvestigador {
 
     public void guardarContenido(String rutaArchivo, ArrayList<Investigador> investigadores) {
-        try {
-            FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
-            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
+        try (FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+             ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo)) {
             salidaObjeto.writeObject(investigadores);
-            salidaArchivo.close();
-            salidaObjeto.close();
         } catch (Exception e) {
             System.out.println("Error al guardar contenido: " + e.getMessage());
         }
     }
     
     public void guardarMuestras(String rutaArchivo, ArrayList<Muestra> muestras) {
-        try {
-            FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
-            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
+        try (FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+             ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo)) {
             salidaObjeto.writeObject(muestras);
-            salidaArchivo.close();
-            salidaObjeto.close();
         } catch (Exception e) {
             System.out.println("Error al guardar muestras: " + e.getMessage());
         }
     }
     
-    public void agregarContenido(String ruta_archivo, Investigador investigador){
+    public void agregarContenido(String rutaArchivo, Investigador investigador) {
         try {
-            // Se obtiene el listado de investigador
-            List<Investigador> listado_investigador = this.obtenerContenido(ruta_archivo);
-            listado_investigador.add(investigador);
+            List<Investigador> listadoInvestigador = obtenerContenido(rutaArchivo);
+            listadoInvestigador.add(investigador);
 
-            FileOutputStream salidaArchivo = new FileOutputStream(ruta_archivo);
-            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
-            salidaObjeto.writeObject(listado_investigador);
-            salidaArchivo.close();
-            salidaObjeto.close();
+            try (FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+                 ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo)) {
+                salidaObjeto.writeObject(listadoInvestigador);
+            }
         } catch (Exception e) {
             System.out.println("Error al agregar contenido: " + e.getMessage());
-        }  
+        }
     }
     
-    public void modificarContenido(String ruta_archivo, String codigo, Investigador investigador){
+    public void modificarContenido(String rutaArchivo, String codigo, Investigador investigador) {
         try {
-            // Se obtiene el listado de investigador
-            List<Investigador> listado_investigador = this.obtenerContenido(ruta_archivo);
+            List<Investigador> listadoInvestigador = obtenerContenido(rutaArchivo);
             
-            for (Investigador invest : listado_investigador) {
+            for (Investigador invest : listadoInvestigador) {
                 if (invest.getCodigo().equals(codigo)) {
                     invest.setNombre(investigador.getNombre());
                     invest.setGenero(investigador.getGenero());
@@ -70,49 +61,40 @@ public class ManejadorArchivoBinarioInvestigador {
                 }
             }
 
-            FileOutputStream salidaArchivo = new FileOutputStream(ruta_archivo);
-            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
-            salidaObjeto.writeObject(listado_investigador);
-            salidaArchivo.close();
-            salidaObjeto.close();
+            try (FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+                 ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo)) {
+                salidaObjeto.writeObject(listadoInvestigador);
+            }
         } catch (Exception e) {
             System.out.println("Error al modificar contenido: " + e.getMessage());
-        }  
+        }
     }
     
-    public void eliminarContenido(String ruta_archivo, String codigo){
+    public void eliminarContenido(String rutaArchivo, String codigo) {
         try {
-            // Se obtiene el listado de investigador
-            List<Investigador> listado_investigador = this.obtenerContenido(ruta_archivo);
+            List<Investigador> listadoInvestigador = obtenerContenido(rutaArchivo);
             
-            for (int i = 0; i < listado_investigador.size(); i++) {
-                if (listado_investigador.get(i).getCodigo().equals(codigo)) {
-                    listado_investigador.remove(i);
-                }
-            }
+            listadoInvestigador.removeIf(investigador -> investigador.getCodigo().equals(codigo));
 
-            FileOutputStream salidaArchivo = new FileOutputStream(ruta_archivo);
-            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
-            salidaObjeto.writeObject(listado_investigador);
-            salidaArchivo.close();
-            salidaObjeto.close();
+            try (FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+                 ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo)) {
+                salidaObjeto.writeObject(listadoInvestigador);
+            }
         } catch (Exception e) {
             System.out.println("Error al eliminar contenido: " + e.getMessage());
-        }  
+        }
     }
     
     @SuppressWarnings("unchecked")
-    public ArrayList<Investigador> obtenerContenido(String ruta_archivo) {
+    public ArrayList<Investigador> obtenerContenido(String rutaArchivo) {
         ArrayList<Investigador> respuesta = new ArrayList<>();
         try {
-            // Verificar si el archivo existe
-            File archivo = new File(ruta_archivo);            
+            File archivo = new File(rutaArchivo);
             if (archivo.exists() && archivo.length() > 0) {
-                FileInputStream entradaArchivo = new FileInputStream(ruta_archivo);
-                ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo);
-                respuesta = (ArrayList<Investigador>) entradaObjeto.readObject();
-                entradaArchivo.close();
-                entradaObjeto.close();
+                try (FileInputStream entradaArchivo = new FileInputStream(rutaArchivo);
+                     ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo)) {
+                    respuesta = (ArrayList<Investigador>) entradaObjeto.readObject();
+                }
             } else {
                 System.out.println("El archivo no existe o está vacío.");
             }
@@ -122,87 +104,70 @@ public class ManejadorArchivoBinarioInvestigador {
         return respuesta;
     }
 
-    public void imprimirContenido(String ruta_archivo) {
-        ArrayList<Investigador> investigadores = obtenerContenido(ruta_archivo);
+    public void imprimirContenido(String rutaArchivo) {
+        ArrayList<Investigador> investigadores = obtenerContenido(rutaArchivo);
         for (Investigador investigador : investigadores) {
             System.out.println("Codigo: " + investigador.getCodigo() + ", Nombre: " + investigador.getNombre() + ", Genero: " + investigador.getGenero() + ", Contraseña: " + investigador.getContrasenia() + ", Experimento: " + investigador.getExperimento());
         }
     }
 
-    public void borrarContenido(String ruta_archivo) {
+    public void borrarContenido(String rutaArchivo) {
         try {
-            // Crear una lista vacía
-            List<Investigador> listado_investigador = new ArrayList<>();
-
-            // Escribir la lista vacía en el archivo
-            FileOutputStream salidaArchivo = new FileOutputStream(ruta_archivo);
-            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
-            salidaObjeto.writeObject(listado_investigador);
-            salidaArchivo.close();
-            salidaObjeto.close();
+            List<Investigador> listadoInvestigador = new ArrayList<>();
+            try (FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+                 ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo)) {
+                salidaObjeto.writeObject(listadoInvestigador);
+            }
         } catch (Exception e) {
             System.out.println("Error al borrar contenido: " + e.getMessage());
         }
     }
 
-    public JFreeChart generarGraficaTop3(String ruta_archivo) {
-        ArrayList<Investigador> investigadores = obtenerContenido(ruta_archivo);
+    public JFreeChart generarGraficaTop3(String rutaArchivo) {
+        ArrayList<Investigador> investigadores = obtenerContenido(rutaArchivo);
 
-        // Ordenar la lista por la cantidad de experimentos en orden descendente
-        Collections.sort(investigadores, new Comparator<Investigador>() {
-            @Override
-            public int compare(Investigador o1, Investigador o2) {
-                return Integer.compare(o2.getExperimento(), o1.getExperimento());
-            }
-        });
+        Collections.sort(investigadores, Comparator.comparingInt(Investigador::getExperimento).reversed());
 
-        // Seleccionar los top 3 investigadores
         List<Investigador> top3Investigadores = investigadores.subList(0, Math.min(3, investigadores.size()));
 
-        // Crear el dataset para la gráfica
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         for (Investigador investigador : top3Investigadores) {
             dataset.addValue(investigador.getExperimento(), "Experimentos", investigador.getNombre());
         }
 
-        // Crear la gráfica de barras
-        JFreeChart barChart = ChartFactory.createBarChart(
+        return ChartFactory.createBarChart(
                 "Top 3 Investigadores con más Experimentos",
                 "Investigador",
                 "Cantidad de Experimentos",
                 dataset,
                 PlotOrientation.VERTICAL,
                 false, true, false);
-
-        return barChart;
     }
 
-    public void agregarMuestra(String ruta_archivo, Muestra muestra) {
+    public void agregarMuestra(String rutaArchivo, Muestra muestra) {
         try {
-            List<Muestra> listado_muestras = this.obtenerMuestras(ruta_archivo);
-            listado_muestras.add(muestra);
+            List<Muestra> listadoMuestras = obtenerMuestras(rutaArchivo);
+            listadoMuestras.add(muestra);
 
-            FileOutputStream salidaArchivo = new FileOutputStream(ruta_archivo);
-            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
-            salidaObjeto.writeObject(listado_muestras);
-            salidaArchivo.close();
-            salidaObjeto.close();
+            try (FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+                 ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo)) {
+                salidaObjeto.writeObject(listadoMuestras);
+            }
         } catch (Exception e) {
             System.out.println("Error al agregar muestra: " + e.getMessage());
         }
     }
 
     @SuppressWarnings("unchecked")
-    public ArrayList<Muestra> obtenerMuestras(String ruta_archivo) {
+    public ArrayList<Muestra> obtenerMuestras(String rutaArchivo) {
         ArrayList<Muestra> respuesta = new ArrayList<>();
         try {
-            File archivo = new File(ruta_archivo);
+            File archivo = new File(rutaArchivo);
             if (archivo.exists() && archivo.length() > 0) {
-                FileInputStream entradaArchivo = new FileInputStream(ruta_archivo);
-                ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo);
-                respuesta = (ArrayList<Muestra>) entradaObjeto.readObject();
-                entradaArchivo.close();
-                entradaObjeto.close();
+                try (FileInputStream entradaArchivo = new FileInputStream(rutaArchivo);
+                     ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo)) {
+                    respuesta = (ArrayList<Muestra>) entradaObjeto.readObject();
+                }
             } else {
                 System.out.println("El archivo no existe o está vacío.");
             }
@@ -213,12 +178,9 @@ public class ManejadorArchivoBinarioInvestigador {
     }
 
     public void guardarAsignaciones(String rutaArchivo, ArrayList<Asignacion> asignaciones) {
-        try {
-            FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
-            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
+        try (FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+             ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo)) {
             salidaObjeto.writeObject(asignaciones);
-            salidaArchivo.close();
-            salidaObjeto.close();
         } catch (Exception e) {
             System.out.println("Error al guardar asignaciones: " + e.getMessage());
         }
@@ -230,11 +192,10 @@ public class ManejadorArchivoBinarioInvestigador {
         try {
             File archivo = new File(rutaArchivo);
             if (archivo.exists() && archivo.length() > 0) {
-                FileInputStream entradaArchivo = new FileInputStream(rutaArchivo);
-                ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo);
-                respuesta = (ArrayList<Asignacion>) entradaObjeto.readObject();
-                entradaArchivo.close();
-                entradaObjeto.close();
+                try (FileInputStream entradaArchivo = new FileInputStream(rutaArchivo);
+                     ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo)) {
+                    respuesta = (ArrayList<Asignacion>) entradaObjeto.readObject();
+                }
             } else {
                 System.out.println("El archivo no existe o está vacío.");
             }

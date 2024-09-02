@@ -50,6 +50,7 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
      * Creates new form frmMenuAdministracion
      */
     public frmMenuAdministracion() {
+
         initComponents();
         ManejadorArchivoBinarioInvestigador manejadorInvestigador = new ManejadorArchivoBinarioInvestigador();
         asignaciones = manejadorInvestigador.obtenerAsignaciones("asignaciones.bin");
@@ -272,7 +273,7 @@ private void inicializarTablas() {
     DefaultTableModel model2 = new DefaultTableModel(new Object[]{"Código", "Descripción", "Estado", "Acciones"}, 0);
     jTable2.setModel(model2);
 
-    DefaultTableModel model3 = new DefaultTableModel(new Object[]{"Código", "Nombre", "Tipo"}, 0);
+    DefaultTableModel model3 = new DefaultTableModel(new Object[]{"Código", "Nombre", "Acciones"}, 0);
     jTable3.setModel(model3);
 }
 

@@ -9,10 +9,10 @@ public class Patron implements Serializable {
     private String nombre;
     private String csvContent;
 
-    public Patron(String codigo, String nombre, String csvContent) {
+    public Patron(String codigo, String nombre, String datos) {
         this.codigo = codigo;
         this.nombre = nombre;
-        this.csvContent = csvContent;
+        this.csvContent = datos;
     }
 
     // Getters y setters
