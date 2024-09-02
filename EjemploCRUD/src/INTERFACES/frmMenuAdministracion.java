@@ -23,6 +23,7 @@ import javax.swing.JOptionPane;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
+import MODELS.Asignacion;
 import MODELS.Investigador;
 import MODELS.Muestra;
 import MODELS.Patron;
@@ -30,6 +31,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashSet;
+import java.util.Set;
 
 
 
@@ -40,21 +43,112 @@ import java.io.ObjectOutputStream;
 public class frmMenuAdministracion extends javax.swing.JFrame {
 
     private ChartPanel chartPanel;
+    private ArrayList<Asignacion> asignaciones;
+
 
     /**
      * Creates new form frmMenuAdministracion
      */
     public frmMenuAdministracion() {
         initComponents();
+        ManejadorArchivoBinarioInvestigador manejadorInvestigador = new ManejadorArchivoBinarioInvestigador();
+        asignaciones = manejadorInvestigador.obtenerAsignaciones("asignaciones.bin");
         inicializarTablas();
         setLocationRelativeTo(null);
         agregarGrafica();        
         refrescarTabla();
         refrescarTablaMuestras();
+        updateTableFromBin();
+        cargarCodigosInvestigadores();
+        cargarCodigosMuestras();
    
     }
 
+    private void cargarCodigosInvestigadores() {
+        ManejadorArchivoBinarioInvestigador manejadorInvestigador = new ManejadorArchivoBinarioInvestigador();
+        ArrayList<Investigador> investigadores = manejadorInvestigador.obtenerContenido("investigador.bin");
+
+        jComboBox1.removeAllItems();
+        for (Investigador investigador : investigadores) {
+            jComboBox1.addItem(investigador.getCodigo());
+        }
+    }
+
+    private void cargarCodigosMuestras() {
+        ManejadorArchivoBinarioInvestigador manejadorInvestigador = new ManejadorArchivoBinarioInvestigador();
+        ArrayList<Muestra> muestras = manejadorInvestigador.obtenerMuestras("muestras.bin");
+
+        // Obtener los códigos de las muestras ya asignadas
+        Set<String> muestrasAsignadas = new HashSet<>();
+        for (Asignacion asignacion : asignaciones) {
+            muestrasAsignadas.add(asignacion.getCodigoMuestra());
+        }
+
+        jComboBox2.removeAllItems();
+        for (Muestra muestra : muestras) {
+            if (!muestrasAsignadas.contains(muestra.getCodigo())) {
+                jComboBox2.addItem(muestra.getCodigo());
+            }
+        }
+    }
+
+    private void asignarMuestraAInvestigador(String codigoInvestigador, String codigoMuestra) {
+        ManejadorArchivoBinarioInvestigador manejadorInvestigador = new ManejadorArchivoBinarioInvestigador();
+        ArrayList<Muestra> muestras = manejadorInvestigador.obtenerMuestras("muestras.bin");
+
+        // Crear una nueva asignación
+        Asignacion nuevaAsignacion = new Asignacion(codigoInvestigador, codigoMuestra);
+        asignaciones.add(nuevaAsignacion);
+
+        // Cambiar el estado de la muestra a "en proceso"
+        for (Muestra muestra : muestras) {
+            if (muestra.getCodigo().equals(codigoMuestra)) {
+                muestra.setEstado("en proceso");
+                break;
+            }
+        }
+
+        // Guardar los cambios
+        manejadorInvestigador.guardarAsignaciones("asignaciones.bin", asignaciones);
+        manejadorInvestigador.guardarMuestras("muestras.bin", muestras);
+
+        // Imprimir la lista de asignaciones actualizada
+        System.out.println("Lista de Asignaciones:");
+        for (Asignacion asignacion : asignaciones) {
+            System.out.println("Investigador: " + asignacion.getCodigoInvestigador() + ", Muestra: " + asignacion.getCodigoMuestra());
+        }
+
+        // Recargar los códigos de las muestras
+        cargarCodigosMuestras();
+    }
+
+
     
+    @SuppressWarnings("unchecked")
+    private void updateTableFromBin() {
+        List<Patron> patrones = new ArrayList<>();
+        File file = new File("patron.bin");
+
+        if (file.exists()) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                Object obj = ois.readObject();
+                if (obj instanceof List<?>) {
+                    List<?> list = (List<?>) obj;
+                    if (!list.isEmpty() && list.get(0) instanceof Patron) {
+                        patrones = (List<Patron>) list;
+                    }
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        DefaultTableModel tableModel = (DefaultTableModel) getJTable3().getModel();
+        tableModel.setRowCount(0); // Limpiar las filas existentes
+
+        for (Patron patron : patrones) {
+            tableModel.addRow(new Object[]{patron.getCodigo(), patron.getNombre(), patron.getCsvContent()});}
+        }
 
     public void refrescarTablaMuestras() {
         ManejadorArchivoBinarioInvestigador manejador = new ManejadorArchivoBinarioInvestigador();
@@ -642,7 +736,9 @@ private void inicializarTablas() {
         }        
     }
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        
+        String codigoInvestigador = jComboBox1.getSelectedItem().toString();
+        String codigoMuestra = jComboBox2.getSelectedItem().toString();
+        asignarMuestraAInvestigador(codigoInvestigador, codigoMuestra);       
     }//GEN-LAST:event_jButton7ActionPerformed
 
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed

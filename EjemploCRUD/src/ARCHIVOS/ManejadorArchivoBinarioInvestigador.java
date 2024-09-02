@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import MODELS.Investigador;
 import MODELS.Muestra;
+import MODELS.Asignacion;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
@@ -16,6 +17,30 @@ import java.util.Comparator;
 
 public class ManejadorArchivoBinarioInvestigador {
 
+    public void guardarContenido(String rutaArchivo, ArrayList<Investigador> investigadores) {
+        try {
+            FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
+            salidaObjeto.writeObject(investigadores);
+            salidaArchivo.close();
+            salidaObjeto.close();
+        } catch (Exception e) {
+            System.out.println("Error al guardar contenido: " + e.getMessage());
+        }
+    }
+    
+    public void guardarMuestras(String rutaArchivo, ArrayList<Muestra> muestras) {
+        try {
+            FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
+            salidaObjeto.writeObject(muestras);
+            salidaArchivo.close();
+            salidaObjeto.close();
+        } catch (Exception e) {
+            System.out.println("Error al guardar muestras: " + e.getMessage());
+        }
+    }
+    
     public void agregarContenido(String ruta_archivo, Investigador investigador){
         try {
             // Se obtiene el listado de investigador
@@ -152,7 +177,7 @@ public class ManejadorArchivoBinarioInvestigador {
         return barChart;
     }
 
-        public void agregarMuestra(String ruta_archivo, Muestra muestra) {
+    public void agregarMuestra(String ruta_archivo, Muestra muestra) {
         try {
             List<Muestra> listado_muestras = this.obtenerMuestras(ruta_archivo);
             listado_muestras.add(muestra);
@@ -183,6 +208,38 @@ public class ManejadorArchivoBinarioInvestigador {
             }
         } catch (Exception e) {
             System.out.println("Error al obtener las muestras: " + e.getMessage());
+        }
+        return respuesta;
+    }
+
+    public void guardarAsignaciones(String rutaArchivo, ArrayList<Asignacion> asignaciones) {
+        try {
+            FileOutputStream salidaArchivo = new FileOutputStream(rutaArchivo);
+            ObjectOutputStream salidaObjeto = new ObjectOutputStream(salidaArchivo);
+            salidaObjeto.writeObject(asignaciones);
+            salidaArchivo.close();
+            salidaObjeto.close();
+        } catch (Exception e) {
+            System.out.println("Error al guardar asignaciones: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public ArrayList<Asignacion> obtenerAsignaciones(String rutaArchivo) {
+        ArrayList<Asignacion> respuesta = new ArrayList<>();
+        try {
+            File archivo = new File(rutaArchivo);
+            if (archivo.exists() && archivo.length() > 0) {
+                FileInputStream entradaArchivo = new FileInputStream(rutaArchivo);
+                ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo);
+                respuesta = (ArrayList<Asignacion>) entradaObjeto.readObject();
+                entradaArchivo.close();
+                entradaObjeto.close();
+            } else {
+                System.out.println("El archivo no existe o está vacío.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error al obtener las asignaciones: " + e.getMessage());
         }
         return respuesta;
     }

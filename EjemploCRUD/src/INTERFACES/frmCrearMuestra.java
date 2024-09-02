@@ -16,7 +16,6 @@ public class frmCrearMuestra extends javax.swing.JFrame {
     private File selectedFile;
     private JTextField codigoField;
     private JTextField descripcionField;
-    private JTextField estadoField;
     private JButton jButton1;
     private JButton jButton2;
 
@@ -32,13 +31,11 @@ public class frmCrearMuestra extends javax.swing.JFrame {
         // Inicialización de componentes
         codigoField = new JTextField(15);
         descripcionField = new JTextField(15);
-        estadoField = new JTextField(15);
         jButton1 = new JButton("Cargar CSV");
         jButton2 = new JButton("Guardar");
 
         JLabel codigoLabel = new JLabel("Código:");
         JLabel descripcionLabel = new JLabel("Descripción:");
-        JLabel estadoLabel = new JLabel("Estado:");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -65,13 +62,11 @@ public class frmCrearMuestra extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(codigoLabel)
                     .addComponent(descripcionLabel)
-                    .addComponent(estadoLabel)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(codigoField)
-                    .addComponent(descripcionField)
-                    .addComponent(estadoField))
+                    .addComponent(descripcionField))
         );
 
         layout.setVerticalGroup(
@@ -82,9 +77,6 @@ public class frmCrearMuestra extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(descripcionLabel)
                     .addComponent(descripcionField))
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(estadoLabel)
-                    .addComponent(estadoField))
                 .addComponent(jButton1)
                 .addComponent(jButton2)
         );
@@ -108,10 +100,9 @@ public class frmCrearMuestra extends javax.swing.JFrame {
                 List<List<String>> matrix = readCSV(selectedFile);
                 String codigo = codigoField.getText().trim();
                 String descripcion = descripcionField.getText().trim();
-                String estado = estadoField.getText().trim();
+                String estado = "ingreso"; // Estado inicial
                 saveMatrixToBin(matrix, codigo, descripcion, estado);
                 JOptionPane.showMessageDialog(this, "Archivo CSV cargado y guardado exitosamente.");
-
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(this, "Error al leer el archivo CSV: " + e.getMessage());
             }

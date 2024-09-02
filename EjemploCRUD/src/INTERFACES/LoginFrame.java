@@ -86,7 +86,8 @@ public class LoginFrame extends JFrame {
                     new frmMenuAdministracion().setVisible(true);
                     dispose();
                 } else if (validarCredenciales(code, password)) {
-                    new frmMenuUsuario().setVisible(true);
+                    String codigoInvestigador = code; // Reemplaza esto con el valor real
+                    new frmMenuUsuario(codigoInvestigador).setVisible(true);                    
                     dispose();
                 } else {
                     JOptionPane.showMessageDialog(LoginFrame.this, "Código o contraseña incorrectos", "Error", JOptionPane.ERROR_MESSAGE);
