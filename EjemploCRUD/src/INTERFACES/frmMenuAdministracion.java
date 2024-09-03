@@ -34,6 +34,15 @@ import java.io.ObjectOutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.JButton;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableCellEditor;
+import java.awt.Component;
+import javax.swing.AbstractCellEditor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.FileWriter;
+import java.awt.Desktop;
 
 
 /**
@@ -44,6 +53,9 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
 
     private ChartPanel chartPanel;
     private ArrayList<Asignacion> asignaciones;
+    private List<Muestra> muestras;
+    private List<Patron> patrones;
+
 
 
     /**
@@ -54,6 +66,8 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
         initComponents();
         ManejadorArchivoBinarioInvestigador manejadorInvestigador = new ManejadorArchivoBinarioInvestigador();
         asignaciones = manejadorInvestigador.obtenerAsignaciones("asignaciones.bin");
+        cargarDatosEnTablaMuestras("muestras.bin");
+        cargarDatosEnTablaPatrones("patron.bin");
         inicializarTablas();
         setLocationRelativeTo(null);
         agregarGrafica();        
@@ -65,6 +79,164 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
    
     }
 
+    
+    private Muestra obtenerMuestraPorCodigo(String codigo) {
+        for (Muestra muestra : muestras) {
+            if (muestra.getCodigo().equals(codigo)) {
+                return muestra;
+            }
+        }
+        return null; // Si no se encuentra la muestra
+    }
+    
+    private Patron obtenerPatronPorCodigo(String codigo) {
+        for (Patron patron : patrones) {
+            if (patron.getCodigo().equals(codigo)) {
+                return patron;
+            }
+        }
+        return null; // Si no se encuentra el patrón
+    }
+    
+    public class HtmlTableGenerator {
+
+        public static String generateHtmlTable(String csvContent) {
+            StringBuilder html = new StringBuilder();
+            html.append("<html><body><table border='1'>");
+    
+            String[] rows = csvContent.split("\n");
+            for (String row : rows) {
+                html.append("<tr>");
+                String[] columns = row.split(",");
+                for (String column : columns) {
+                    html.append("<td>").append(column).append("</td>");
+                }
+                html.append("</tr>");
+            }
+    
+            html.append("</table></body></html>");
+            return html.toString();
+        }
+    
+        public static void saveHtmlToFile(String htmlContent, String filePath) throws IOException {
+            try (FileWriter writer = new FileWriter(filePath)) {
+                writer.write(htmlContent);
+            }
+        }
+    }
+
+
+    public class ButtonRenderer extends JButton implements TableCellRenderer {
+        public ButtonRenderer() {
+            setOpaque(true);
+            setText("Ver"); // Establecer el texto del botón
+        }
+    
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (isSelected) {
+                setBackground(table.getSelectionBackground());
+                setForeground(table.getSelectionForeground());
+            } else {
+                setBackground(table.getBackground());
+                setForeground(table.getForeground());
+            }
+            return this;
+        }
+    }
+    
+
+    public class ButtonEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
+        private JButton button;
+        private String codigo;
+        private JTable table;
+        private frmMenuAdministracion parent;
+    
+        public ButtonEditor(JButton button, frmMenuAdministracion parent) {
+            this.button = button;
+            this.parent = parent;
+            button.addActionListener(this);
+            button.setText("Ver"); // Establecer el texto del botón
+        }
+    
+        @Override
+        public Object getCellEditorValue() {
+            return new String();
+        }
+    
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            this.codigo = (String) table.getValueAt(row, 0); // Suponiendo que el código está en la primera columna
+            this.table = table;
+            return button;
+        }
+    
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String csvContent = "";
+            if (table.getModel().getColumnName(2).equals("Estado")) { // Es una muestra
+                Muestra muestra = parent.obtenerMuestraPorCodigo(codigo);
+                if (muestra != null) {
+                    csvContent = muestra.getCodigoCSV();
+                }
+            } else { // Es un patrón
+                Patron patron = parent.obtenerPatronPorCodigo(codigo);
+                if (patron != null) {
+                    csvContent = patron.getCsvContent();
+                }
+            }
+    
+            String htmlContent = HtmlTableGenerator.generateHtmlTable(csvContent);
+            String filePath = "table.html";
+            try {
+                HtmlTableGenerator.saveHtmlToFile(htmlContent, filePath);
+                Desktop.getDesktop().browse(new File(filePath).toURI());
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(button, "Error al abrir el archivo HTML: " + ex.getMessage());
+            }
+            fireEditingStopped();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void cargarDatosEnTablaMuestras(String ruta_archivo) {
+        DefaultTableModel modelo = (DefaultTableModel) jTable2.getModel();
+        modelo.setRowCount(0);  // Limpiar la tabla antes de agregar los nuevos datos
+        
+        try (FileInputStream entradaArchivo = new FileInputStream(ruta_archivo);
+             ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo)) {
+            muestras = (List<Muestra>) entradaObjeto.readObject();
+            
+            for (Muestra muestra : muestras) {
+                modelo.addRow(new Object[]{muestra.getCodigo(), muestra.getDescripcion(), muestra.getEstado(), "Ver"});
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar los datos en la tabla: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    
+        jTable2.getColumn("Acciones").setCellRenderer(new ButtonRenderer());
+        jTable2.getColumn("Acciones").setCellEditor(new ButtonEditor(new JButton(), this));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void cargarDatosEnTablaPatrones(String ruta_archivo) {
+        DefaultTableModel modelo = (DefaultTableModel) jTable3.getModel();
+        modelo.setRowCount(0);  // Limpiar la tabla antes de agregar los nuevos datos
+        
+        try (FileInputStream entradaArchivo = new FileInputStream(ruta_archivo);
+             ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo)) {
+            patrones = (List<Patron>) entradaObjeto.readObject();
+            
+            for (Patron patron : patrones) {
+                modelo.addRow(new Object[]{patron.getCodigo(), patron.getNombre(), "Ver"});
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            JOptionPane.showMessageDialog(this, "Error al cargar los datos en la tabla: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    
+        jTable3.getColumn("Acciones").setCellRenderer(new ButtonRenderer());
+        jTable3.getColumn("Acciones").setCellEditor(new ButtonEditor(new JButton(), this));
+    }
     private void cargarCodigosInvestigadores() {
         ManejadorArchivoBinarioInvestigador manejadorInvestigador = new ManejadorArchivoBinarioInvestigador();
         ArrayList<Investigador> investigadores = manejadorInvestigador.obtenerContenido("investigador.bin");
@@ -266,17 +438,23 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
         jPanel5.validate();
     }
 
-private void inicializarTablas() {
-    DefaultTableModel model1 = new DefaultTableModel(new Object[]{"Código", "Nombre", "Género", "Experimento"}, 0);
-    jTable1.setModel(model1);
-
-    DefaultTableModel model2 = new DefaultTableModel(new Object[]{"Código", "Descripción", "Estado", "Acciones"}, 0);
-    jTable2.setModel(model2);
-
-    DefaultTableModel model3 = new DefaultTableModel(new Object[]{"Código", "Nombre", "Acciones"}, 0);
-    jTable3.setModel(model3);
-}
-
+    private void inicializarTablas() {
+        DefaultTableModel model1 = new DefaultTableModel(new Object[]{"Código", "Nombre", "Género", "Experimento"}, 0);
+        jTable1.setModel(model1);
+    
+        DefaultTableModel model2 = new DefaultTableModel(new Object[]{"Código", "Descripción", "Estado", "Acciones"}, 0);
+        jTable2.setModel(model2);
+    
+        DefaultTableModel model3 = new DefaultTableModel(new Object[]{"Código", "Nombre", "Acciones"}, 0);
+        jTable3.setModel(model3);
+    
+        // Asignar renderizadores y editores de celdas
+        jTable2.getColumn("Acciones").setCellRenderer(new ButtonRenderer());
+        jTable2.getColumn("Acciones").setCellEditor(new ButtonEditor(new JButton(), this));
+    
+        jTable3.getColumn("Acciones").setCellRenderer(new ButtonRenderer());
+        jTable3.getColumn("Acciones").setCellEditor(new ButtonEditor(new JButton(), this));
+    }
 
     private void actualizarGrafica() {
         ManejadorArchivoBinarioInvestigador manejadorArchivo = new ManejadorArchivoBinarioInvestigador();
