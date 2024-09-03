@@ -2,12 +2,13 @@ package INTERFACES;
 
 import ARCHIVOS.ManejadorArchivoBinarioInvestigador;
 import ARCHIVOS.ManejadorArchivoBinarioPatron;
+import ARCHIVOS.ManejadorArchivoBinarioResultado;
+import MODELS.Resultado;
 import MODELS.Asignacion;
 import MODELS.Patron;
 import MODELS.Muestra;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -22,6 +23,7 @@ public class frmMenuUsuario extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
         cargarDatosInvestigador();
+        cargarResultados();
     }
 
     private void cargarDatosInvestigador() {
@@ -48,6 +50,23 @@ public class frmMenuUsuario extends javax.swing.JFrame {
         jComboBox1.removeAllItems();
         for (Patron patron : patrones) {
             jComboBox1.addItem(patron.getCodigo());
+        }
+    }
+
+    private void cargarResultados() {
+        ManejadorArchivoBinarioResultado manejadorArchivo = new ManejadorArchivoBinarioResultado();
+        ArrayList<Resultado> resultados = manejadorArchivo.obtenerResultados("resultados.bin");
+
+        DefaultTableModel model = (DefaultTableModel) jTable2.getModel();
+        for (Resultado resultado : resultados) {
+            model.addRow(new Object[]{
+                resultado.getNumero(),
+                resultado.getCodigoMuestra(),
+                resultado.getCodigoPatron(),
+                resultado.getFecha(),
+                resultado.getHora(),
+                resultado.getResultado()
+            });
         }
     }
 
@@ -89,7 +108,7 @@ public class frmMenuUsuario extends javax.swing.JFrame {
         jLabel4.setFont(new java.awt.Font("Segoe UI", 0, 24));
         jLabel4.setText("RESULTADO");
 
-        jLabel5.setFont(new java.awt.Font("Segoe UI", 0, 24));
+        jLabel5.setFont(new java.awt.Font("Segoe UI", 0, 18));
 
         jLabelinicios.setFont(new java.awt.Font("Segoe UI", 0, 18));
 
@@ -110,7 +129,7 @@ public class frmMenuUsuario extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                         .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 299, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(177, 177, 177))
         );
         jPanel1Layout.setVerticalGroup(
@@ -143,11 +162,11 @@ public class frmMenuUsuario extends javax.swing.JFrame {
         jTable2.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {},
             new String [] {
-                "No.", "Muestra", "Patrón", "Datos"
+                "No.", "Muestra", "Patrón", "Fecha", "Hora", "Resultado", "Acciones"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false
+                false, false, false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -198,7 +217,6 @@ public class frmMenuUsuario extends javax.swing.JFrame {
         pack();
     }
 
-
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {
         // Obtener los valores seleccionados de los JComboBox
         String codigoMuestra = (String) jComboBox2.getSelectedItem();
@@ -232,10 +250,6 @@ public class frmMenuUsuario extends javax.swing.JFrame {
                 String[] muestraDatos = muestraCSV.split("[,;\\r\\n]+");
                 String[] patronDatos = patronCSV.split("[,;\\r\\n]+");
     
-                // Imprimir los datos para depuración
-                System.out.println("Datos de Muestra: " + Arrays.toString(muestraDatos));
-                System.out.println("Datos de Patrón: " + Arrays.toString(patronDatos));
-    
                 // Calcular el tamaño de la matriz cuadrada
                 int muestraLength = muestraDatos.length;
                 int patronLength = patronDatos.length;
@@ -243,10 +257,6 @@ public class frmMenuUsuario extends javax.swing.JFrame {
                 // Determinar las dimensiones de las matrices
                 int muestraSize = (int) Math.sqrt(muestraLength);
                 int patronSize = (int) Math.sqrt(patronLength);
-    
-                // Imprimir tamaños calculados
-                System.out.println("Tamaño de la matriz Muestra: " + muestraSize);
-                System.out.println("Tamaño de la matriz Patrón: " + patronSize);
     
                 // Crear las matrices
                 int[][] matrizM = new int[muestraSize][muestraSize];
@@ -268,68 +278,39 @@ public class frmMenuUsuario extends javax.swing.JFrame {
                     }
                 }
     
-                // Imprimir las matrices para depuración
-                System.out.println("Matriz M:");
-                for (int[] row : matrizM) {
-                    System.out.println(Arrays.toString(row));
-                }
-    
-                System.out.println("Matriz P:");
-                for (int[] row : matrizP) {
-                    System.out.println(Arrays.toString(row));
-                }
-    
                 // Multiplicar matrizM por 3 y guardar en matriz1
                 int[][] matriz1 = new int[muestraSize][muestraSize];
-                System.out.println("Multiplicación de matrizM por 3:");
                 for (int i = 0; i < muestraSize; i++) {
                     for (int j = 0; j < muestraSize; j++) {
                         matriz1[i][j] = matrizM[i][j] * 3;
-                        System.out.print(matriz1[i][j] + " ");
                     }
-                    System.out.println();
                 }
     
                 // Multiplicar matriz1 por 7 y guardar en matriz2
                 int[][] matriz2 = new int[muestraSize][muestraSize];
-                System.out.println("Multiplicación de matriz1 por 7:");
                 for (int i = 0; i < muestraSize; i++) {
                     for (int j = 0; j < muestraSize; j++) {
-                        matriz2[i][j] = matrizM[i][j] * 7;
-                        System.out.print(matriz2[i][j] + " ");
+                        matriz2[i][j] = matriz1[i][j] * 7;
                     }
-                    System.out.println();
                 }
     
                 // Multiplicar matriz2 por matriz1 y guardar en matriz3
                 int[][] matriz3 = new int[muestraSize][muestraSize];
-                System.out.println("Multiplicación de matriz2 por matriz1:");
                 for (int i = 0; i < muestraSize; i++) {
                     for (int j = 0; j < muestraSize; j++) {
                         matriz3[i][j] = 0;
                         for (int k = 0; k < muestraSize; k++) {
                             matriz3[i][j] += matriz2[i][k] * matriz1[k][j];
                         }
-                        System.out.print(matriz3[i][j] + " ");
                     }
-                    System.out.println();
                 }
     
                 // Realizar la división modular de 2 en matriz3 y guardar en matrizM2
                 int[][] matrizM2 = new int[muestraSize][muestraSize];
-                System.out.println("División modular de 2 en matriz3:");
                 for (int i = 0; i < muestraSize; i++) {
                     for (int j = 0; j < muestraSize; j++) {
                         matrizM2[i][j] = matriz3[i][j] % 2;
-                        System.out.print(matrizM2[i][j] + " ");
                     }
-                    System.out.println();
-                }
-    
-                // Imprimir matrizM2 para depuración
-                System.out.println("Matriz M2:");
-                for (int[] row : matrizM2) {
-                    System.out.println(Arrays.toString(row));
                 }
     
                 // Comparar matrizM2 con matrizP
@@ -346,42 +327,35 @@ public class frmMenuUsuario extends javax.swing.JFrame {
                     }
                 }
     
+                // Obtener fecha y hora del sistema
+                java.util.Date date = new java.util.Date();
+                java.text.SimpleDateFormat sdfDate = new java.text.SimpleDateFormat("yyyy-MM-dd");
+                java.text.SimpleDateFormat sdfTime = new java.text.SimpleDateFormat("HH:mm:ss");
+                String fecha = sdfDate.format(date);
+                String hora = sdfTime.format(date);
+    
                 // Mostrar el resultado en jLabel5
+                String resultado;
                 if (sonIguales) {
-                    System.out.println("Resultado: EXITO");
-                    jLabel5.setText("EXITO");
+                    resultado = "EXITO";
+                    jLabel5.setText("Los resultados coinciden con " + muestraSeleccionada.getCodigo());
+                    jLabel5.setForeground(new java.awt.Color(0, 128, 0)); // Verde
                 } else {
-                    System.out.println("Resultado: FALLO");
-                    jLabel5.setText("FALLO");
+                    resultado = "FALLO";
+                    jLabel5.setText("Los resultados no coinciden con " + muestraSeleccionada.getCodigo());
+                    jLabel5.setForeground(new java.awt.Color(255, 0, 0)); // Rojo
                 }
     
                 // Mostrar los datos en la tabla
                 DefaultTableModel model = (DefaultTableModel) jTable2.getModel();
-                model.setRowCount(0); // Limpiar la tabla
+                int rowCount = model.getRowCount();
+                model.addRow(new Object[]{rowCount + 1, muestraSeleccionada.getCodigo(), patronSeleccionado.getCodigo(), fecha, hora, resultado});
     
-                // Agregar datos de la muestra
-                for (int i = 0; i < muestraSize; i++) {
-                    StringBuilder row = new StringBuilder();
-                    for (int j = 0; j < muestraSize; j++) {
-                        row.append(muestraDatos[i * muestraSize + j]);
-                        if (j < muestraSize - 1) {
-                            row.append(",");
-                        }
-                    }
-                    model.addRow(new Object[]{i + 1, muestraSeleccionada.getCodigo(), "", row.toString()});
-                }
+                // Crear un objeto Resultado y guardarlo en el archivo binario
+                Resultado nuevoResultado = new Resultado(rowCount + 1, muestraSeleccionada.getCodigo(), patronSeleccionado.getCodigo(), resultado);
+                ManejadorArchivoBinarioResultado manejadorArchivo = new ManejadorArchivoBinarioResultado();
+                manejadorArchivo.agregarResultado("resultados.bin", nuevoResultado);
     
-                // Agregar datos del patrón
-                for (int i = 0; i < patronSize; i++) {
-                    StringBuilder row = new StringBuilder();
-                    for (int j = 0; j < patronSize; j++) {
-                        row.append(patronDatos[i * patronSize + j]);
-                        if (j < patronSize - 1) {
-                            row.append(",");
-                        }
-                    }
-                    model.addRow(new Object[]{i + 1 + muestraSize, "", patronSeleccionado.getCodigo(), row.toString()});
-                }
             } catch (NumberFormatException e) {
                 jLabel5.setText("Error en los datos de entrada. Asegúrate de que los datos estén correctamente formateados.");
                 e.printStackTrace(); // Imprimir la traza de la pila para depuración
@@ -391,20 +365,6 @@ public class frmMenuUsuario extends javax.swing.JFrame {
         }
     }
     
-    
-    
-    
-    
-
-
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new frmMenuUsuario("INV123").setVisible(true);
-            }
-        });
-    }
-
     private javax.swing.JButton jButton7;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JComboBox<String> jComboBox2;
