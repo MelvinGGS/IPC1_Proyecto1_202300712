@@ -125,7 +125,6 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
         }
     }
 
-
     public class ButtonRenderer extends JButton implements TableCellRenderer {
         public ButtonRenderer() {
             setOpaque(true);
@@ -174,28 +173,55 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             String csvContent = "";
+            String fileName = "";
             if (table.getModel().getColumnName(2).equals("Estado")) { // Es una muestra
                 Muestra muestra = parent.obtenerMuestraPorCodigo(codigo);
                 if (muestra != null) {
                     csvContent = muestra.getCodigoCSV();
+                    fileName = "Muestra_" + muestra.getCodigo() + ".html";
                 }
             } else { // Es un patrón
                 Patron patron = parent.obtenerPatronPorCodigo(codigo);
                 if (patron != null) {
                     csvContent = patron.getCsvContent();
+                    fileName = "Patron_" + patron.getCodigo() + ".html";
                 }
             }
-    
-            String htmlContent = HtmlTableGenerator.generateHtmlTable(csvContent);
-            String filePath = "table.html";
+        
+            String htmlContent;
+            if (csvContent.contains(";")) {
+                htmlContent = generateHtmlTableFromSemicolonSeparated(csvContent);
+            } else {
+                htmlContent = HtmlTableGenerator.generateHtmlTable(csvContent);
+            }
+        
             try {
-                HtmlTableGenerator.saveHtmlToFile(htmlContent, filePath);
-                Desktop.getDesktop().browse(new File(filePath).toURI());
+                HtmlTableGenerator.saveHtmlToFile(htmlContent, fileName);
+                Desktop.getDesktop().browse(new File(fileName).toURI());
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(button, "Error al abrir el archivo HTML: " + ex.getMessage());
             }
             fireEditingStopped();
         }
+
+        private String generateHtmlTableFromSemicolonSeparated(String csvContent) {
+            String[] elements = csvContent.split(";");
+            int n = (int) Math.sqrt(elements.length);
+            StringBuilder html = new StringBuilder();
+            html.append("<html><body><table border='1'>");
+        
+            for (int i = 0; i < n; i++) {
+                html.append("<tr>");
+                for (int j = 0; j < n; j++) {
+                    html.append("<td>").append(elements[i * n + j]).append("</td>");
+                }
+                html.append("</tr>");
+            }
+        
+            html.append("</table></body></html>");
+            return html.toString();
+        }
+        
     }
 
     @SuppressWarnings("unchecked")
@@ -211,7 +237,6 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
                 modelo.addRow(new Object[]{muestra.getCodigo(), muestra.getDescripcion(), muestra.getEstado(), "Ver"});
             }
         } catch (IOException | ClassNotFoundException e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar los datos en la tabla: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     
         jTable2.getColumn("Acciones").setCellRenderer(new ButtonRenderer());
@@ -231,12 +256,12 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
                 modelo.addRow(new Object[]{patron.getCodigo(), patron.getNombre(), "Ver"});
             }
         } catch (IOException | ClassNotFoundException e) {
-            JOptionPane.showMessageDialog(this, "Error al cargar los datos en la tabla: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     
         jTable3.getColumn("Acciones").setCellRenderer(new ButtonRenderer());
         jTable3.getColumn("Acciones").setCellEditor(new ButtonEditor(new JButton(), this));
     }
+
     private void cargarCodigosInvestigadores() {
         ManejadorArchivoBinarioInvestigador manejadorInvestigador = new ManejadorArchivoBinarioInvestigador();
         ArrayList<Investigador> investigadores = manejadorInvestigador.obtenerContenido("investigador.bin");
@@ -284,12 +309,6 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
         // Guardar los cambios
         manejadorInvestigador.guardarAsignaciones("asignaciones.bin", asignaciones);
         manejadorInvestigador.guardarMuestras("muestras.bin", muestras);
-
-        // Imprimir la lista de asignaciones actualizada
-        System.out.println("Lista de Asignaciones:");
-        for (Asignacion asignacion : asignaciones) {
-            System.out.println("Investigador: " + asignacion.getCodigoInvestigador() + ", Muestra: " + asignacion.getCodigoMuestra());
-        }
 
         // Recargar los códigos de las muestras
         cargarCodigosMuestras();
@@ -978,22 +997,21 @@ public class frmMenuAdministracion extends javax.swing.JFrame {
     }
 }
 
-@SuppressWarnings("unchecked")
-private void cargarDatosEnTabla(String ruta_archivo) {
-    DefaultTableModel modelo = (DefaultTableModel) jTable3.getModel();
-    modelo.setRowCount(0);  // Limpiar la tabla antes de agregar los nuevos datos
-    
-    try (FileInputStream entradaArchivo = new FileInputStream(ruta_archivo);
-         ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo)) {
-        List<Patron> patrones = (List<Patron>) entradaObjeto.readObject();
+    @SuppressWarnings("unchecked")
+    private void cargarDatosEnTabla(String ruta_archivo) {
+        DefaultTableModel modelo = (DefaultTableModel) jTable3.getModel();
+        modelo.setRowCount(0);  // Limpiar la tabla antes de agregar los nuevos datos
         
-        for (Patron patron : patrones) {
-            modelo.addRow(new Object[]{patron.getCodigo(), patron.getNombre(), patron.getCsvContent()});
+        try (FileInputStream entradaArchivo = new FileInputStream(ruta_archivo);
+            ObjectInputStream entradaObjeto = new ObjectInputStream(entradaArchivo)) {
+            List<Patron> patrones = (List<Patron>) entradaObjeto.readObject();
+            
+            for (Patron patron : patrones) {
+                modelo.addRow(new Object[]{patron.getCodigo(), patron.getNombre(), patron.getCsvContent()});
+            }
+        } catch (IOException | ClassNotFoundException e) {
         }
-    } catch (IOException | ClassNotFoundException e) {
-        JOptionPane.showMessageDialog(this, "Error al cargar los datos en la tabla: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
-}
     
     
     private void jButton10ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton10ActionPerformed
